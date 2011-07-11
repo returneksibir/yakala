@@ -1,0 +1,5 @@
+after installing tagsoup java library, following commands supposed to work in linux;
+
+scalac -classpath /usr/share/java/tagsoup.jar parser.scala
+scala -classpath "/usr/share/java/tagsoup.jar:/usr/share/java/scala-library.jar:." deneme
+
