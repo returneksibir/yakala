@@ -10,11 +10,23 @@ object Crawler {
 		println(url + " adresindeki kitap fiyatını çıkartıyor...")
 		val doc = Jsoup.connect(url).get();
 		val title = doc.title();
-		println(title)
-		val links = doc.select("span.fiyat"); // a with href
+		val bookName = doc.select("div.kitaptitle2 > h1").first(); // a with href
+		val bookPrice = doc.select("span.fiyat").first(); // a with href
+		val isbn  = doc.select("span#ContentPlaceHolderMainOrta_LabelIsbn").first()
+		val links = doc.select("a[href]"); // a with href
 		val iter = links.iterator()
-		while (iter.hasNext()) {
-			println(iter.next().text())
+
+		println("------- " + title + " -------")
+		println("Kitap = " + bookName.text())
+		println("ISBN  = " + isbn.text())
+		println("Fiyat = " + bookPrice.text())
+
+		println("\n\nLinks on the page:")
+		println("------------------")
+		while(iter.hasNext()) {
+			val text = iter.next().ownText()
+			if (!text.isEmpty())
+				println(text)
 		}
 	}
 }
