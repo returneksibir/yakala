@@ -16,17 +16,25 @@ object Crawler {
 		val links = doc.select("a[href]"); // a with href
 		val iter = links.iterator()
 
-		println("------- " + title + " -------")
-		println("Kitap = " + bookName.text())
-		println("ISBN  = " + isbn.text())
-		println("Fiyat = " + bookPrice.text())
+		try {
+			println("------- " + title + " -------")
+			println("Kitap = " + bookName.text())
+			println("ISBN  = " + isbn.text())
+			println("Fiyat = " + bookPrice.text())
+		} catch {
+			case e : NullPointerException => println("Düzgün biçimli kitap bilgisi bulunamadı.")
+		}
 
 		println("\n\nLinks on the page:")
 		println("------------------")
 		while(iter.hasNext()) {
-			val text = iter.next().ownText()
-			if (!text.isEmpty())
-				println(text)
+			val link = iter.next()
+			val text = link.ownText()
+			var href = link.attr("href").toLowerCase()
+			href = if (href.startsWith("http://")) href; else "http://www.pandora.com.tr" + href;
+			if (!text.isEmpty() && href.startsWith("http://www.pandora.com.tr/urun/")) {
+				println(text + " [ " + href + " ]")
+			}
 		}
 	}
 }
