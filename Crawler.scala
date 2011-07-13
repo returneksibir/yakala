@@ -2,7 +2,8 @@ import io.Source
 import io._
 import org.jsoup.Jsoup
 import org.jsoup.nodes._
-import scala.collection.jcl.ArrayList
+import collection.mutable.Set
+import util.Random
 
 object Crawler {
 
@@ -24,10 +25,10 @@ object Crawler {
 
 	}
 
-	def selectAndPrintProductLinks(doc : Document) {
+	def selectAndPrintProductLinks(doc : Document, setOfLinksToBeVisited : Set[String], setOfLinksAlreadyVisited : Set[String]) {
 
-		println("\n\nLinks on the page:")
-		println("------------------")
+		//println("\n\nLinks on the page:")
+		//println("------------------")
 		val links = doc.select("a[href]"); // a with href
 		val iter = links.iterator()
 		while(iter.hasNext()) {
@@ -36,7 +37,9 @@ object Crawler {
 			var href = link.attr("href").toLowerCase()
 			href = if (href.startsWith("http://")) href; else "http://www.pandora.com.tr" + href;
 			if (!text.isEmpty() && href.startsWith("http://www.pandora.com.tr/urun/")) {
-				println(text + " [ " + href + " ]")
+				if (!setOfLinksAlreadyVisited.contains(href))
+					setOfLinksToBeVisited += href
+				//println(text + " [ " + href + " ]")
 			}
 		}
 	
@@ -44,12 +47,36 @@ object Crawler {
 
 	def main(args : Array[String]) {
 		val url = args(0)
-		println(url + " adresindeki kitap fiyatını çıkartıyor...")
-		val doc = Jsoup.connect(url).get();
 
-		selectAndPrintProductInfo(doc)
+		val setOfLinksToBeVisited : Set[String]	= Set(url)
+		val setOfLinksAlreadyVisited : Set[String] = Set()
+
+		val random = new Random()
+
+		while (!setOfLinksToBeVisited.isEmpty) {
+			setOfLinksToBeVisited foreach { url =>
+			
+				println("\n\n" + url + " adresindeki kitap fiyatını çıkartıyor...")
+	
+				val doc = Jsoup.connect(url).get();
 		
-		selectAndPrintProductLinks(doc)
+				selectAndPrintProductInfo(doc)
+				
+				selectAndPrintProductLinks(doc, setOfLinksToBeVisited, setOfLinksAlreadyVisited)
+	
+				setOfLinksToBeVisited 		-= url
+				setOfLinksAlreadyVisited 	+= url
+	
+				println("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
+				println("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
+	
+				//Let's wait for a random time in the range between 500 - 1500 ms
+	
+				val sleepTime = 500 + Math.abs(random.nextInt()) % 1000
+	
+				Thread.sleep(sleepTime)
+			}
+		}
 	}
 }
 
