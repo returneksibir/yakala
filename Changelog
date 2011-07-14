@@ -1,0 +1,61 @@
+07/14/2011:
+	* Added simple database library.
+	Usage;
+
+	Welcome to Scala version 2.9.0.1 (OpenJDK Server VM, Java 1.6.0_22).
+	Type in expressions to have them evaluated.
+	Type :help for more information.
+
+	scala> import Database._
+	import Database._
+
+	scala> val db1 = DatabaseFactory.get("http://deneme.com")
+	db1: Database.Database = Database.Database@15651df
+
+	scala> val db2 = DatabaseFactory.get("http://asd.com")
+	db2: Database.Database = Database.Database@1080f38
+
+	scala> val db3 = DatabaseFactory.get("http://deneme.com")
+	db3: Database.Database = Database.Database@15651df
+
+	scala> DatabaseFactory.databases
+	http://deneme.com
+	http://asd.com
+
+	scala> db1.add("/page-1233.html")
+
+	scala> db1.add("http://deneme.com/page-not-found.html")
+
+	scala> db1.print_entries
+	Domain : http://deneme.com
+	Entry		:Map(url -> /page-not-found.html, visited -> false, crawled -> false, hash -> -588173248)
+	Entry		:Map(url -> /page-1233.html, visited -> false, crawled -> false, hash -> 105208169)
+
+	scala> db1.remove("http://deneme.com/page-not-found.html")
+	res4: Boolean = true
+
+	scala> db1.print_entries
+	Domain : http://deneme.com
+	Entry		:Map(url -> /page-not-found.html, visited -> false, crawled -> false, hash -> -588173248)
+	Entry		:Map(url -> /page-1233.html, visited -> false, crawled -> false, hash -> 105208169)
+
+
+07/13/2011:
+	* Added jsoup library.
+
+	How to compile and run jsoup based crawler:
+	-------------------------------------------
+	scalac -cp ./jsoup-1.6.1.jar   Crawler.scala
+	scala  -cp ./jsoup-1.6.1.jar:. Crawler http://www.pandora.com.tr/urun/hayvan-alfabesi/236371
+
+	Useful resources:
+	-----------------
+	jsoup Cookbook 	: http://jsoup.org/cookbook/
+	jsoup API	: http://jsoup.org/apidocs/
+
+07/12/2011:
+	* Added tagsoup parsing usage.
+	after installing tagsoup java library, following commands supposed to work in linux;
+
+	scalac -classpath /usr/share/java/tagsoup.jar parser.scala
+	scala -classpath "/usr/share/java/tagsoup.jar:/usr/share/java/scala-library.jar:." deneme

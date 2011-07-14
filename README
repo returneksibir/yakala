@@ -1,14 +1,1 @@
-after installing tagsoup java library, following commands supposed to work in linux;
-
-scalac -classpath /usr/share/java/tagsoup.jar parser.scala
-scala -classpath "/usr/share/java/tagsoup.jar:/usr/share/java/scala-library.jar:." deneme
-
-How to compile and run jsoup based crawler:
--------------------------------------------
-scalac -cp ./jsoup-1.6.1.jar   Crawler.scala
-scala  -cp ./jsoup-1.6.1.jar:. Crawler http://www.pandora.com.tr/urun/hayvan-alfabesi/236371
-
-Useful resources:
------------------
-jsoup Cookbook 	: http://jsoup.org/cookbook/
-jsoup API	: http://jsoup.org/apidocs/
+A humble web crawler.
