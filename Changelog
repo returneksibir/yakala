@@ -1,4 +1,13 @@
 07/14/2011:
+	* Added a sample Test for Database
+	* Added scala test-1.1.jar
+
+	How to compile and run test:
+	-------------------------------------------
+	scalac -cp scalatest-1.1.jar DatabaseTestSuite.scala Database.scala
+	scala  -cp scalatest-1.1.jar:. org.scalatest.tools.Runner -p . -o -s DatabaseTestSuite 
+
+07/14/2011:
 	* Added simple database library.
 	Usage;
 

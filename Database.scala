@@ -31,7 +31,7 @@ object DatabaseFactory {
     }
   }
 
-  def databases { cache.keys.foreach(println _) }
+  def databases = { cache.keySet }
 }
 
 class Database(addr: String) {
