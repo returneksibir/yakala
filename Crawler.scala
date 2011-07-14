@@ -6,13 +6,21 @@ import collection.mutable.Set
 import util.Random
 
 object Crawler {
+	
+	val SITE_URL 			= "http://www.pandora.com.tr/"
+	val BOOK_NAME_PATH 		= "div.kitaptitle2 > h1"
+	val BOOK_PRICE_PATH 	= "span.fiyat"
+	val BOOK_ISBN_PATH 		= "span#ContentPlaceHolderMainOrta_LabelIsbn"
+	val BOOK_PAGE_PATTERN	= "http://www.pandora.com.tr/urun/"
+	val MIN_WAIT_TIME_IN_MS = 200
+	val MAX_WAIT_TIME_IN_MS = 1000
 
 	def selectAndPrintProductInfo(doc : Document) {
 
-		val title = doc.title();
-		val bookName = doc.select("div.kitaptitle2 > h1").first(); // a with href
-		val bookPrice = doc.select("span.fiyat").first(); // a with href
-		val isbn  = doc.select("span#ContentPlaceHolderMainOrta_LabelIsbn").first()
+		val title 		= doc.title();
+		val bookName 	= doc.select(BOOK_NAME_PATH).first()
+		val bookPrice 	= doc.select(BOOK_PRICE_PATH).first()
+		val isbn  		= doc.select(BOOK_ISBN_PATH).first()
 
 		try {
 			println("------- " + title + " -------")
@@ -35,8 +43,8 @@ object Crawler {
 			val link = iter.next()
 			val text = link.ownText()
 			var href = link.attr("href").toLowerCase()
-			href = if (href.startsWith("http://")) href; else "http://www.pandora.com.tr" + href;
-			if (!text.isEmpty() && href.startsWith("http://www.pandora.com.tr/urun/")) {
+			href = if (href.startsWith("http://")) href; else SITE_URL + href;
+			if (!text.isEmpty() && href.startsWith(SITE_URL)) {
 				if (!setOfLinksAlreadyVisited.contains(href))
 					setOfLinksToBeVisited += href
 				//println(text + " [ " + href + " ]")
@@ -56,11 +64,12 @@ object Crawler {
 		while (!setOfLinksToBeVisited.isEmpty) {
 			setOfLinksToBeVisited foreach { url =>
 			
-				println("\n\n" + url + " adresindeki kitap fiyatını çıkartıyor...")
+				println("Sayfa :" + url)
 	
-				val doc = Jsoup.connect(url).get();
-		
-				selectAndPrintProductInfo(doc)
+				val doc = Jsoup.connect(url).get()
+
+				if (url.startsWith(BOOK_PAGE_PATTERN))
+					selectAndPrintProductInfo(doc)
 				
 				selectAndPrintProductLinks(doc, setOfLinksToBeVisited, setOfLinksAlreadyVisited)
 	
@@ -70,9 +79,9 @@ object Crawler {
 				println("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
 				println("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
 	
-				//Let's wait for a random time in the range between 500 - 1500 ms
+				//Let's wait for a random time in the range between MIN_WAIT_TIME_IN_MS ~ MAX_WAIT_TIME_IN_MS ms
 	
-				val sleepTime = 500 + Math.abs(random.nextInt()) % 1000
+				val sleepTime = MIN_WAIT_TIME_IN_MS + Math.abs(random.nextInt()) % (MAX_WAIT_TIME_IN_MS - MIN_WAIT_TIME_IN_MS)
 	
 				Thread.sleep(sleepTime)
 			}
