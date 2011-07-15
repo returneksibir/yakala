@@ -51,13 +51,11 @@ object Crawler {
     val iter = links.iterator()
     while(iter.hasNext()) {
       val link = iter.next()
-      val text = link.ownText()
       var href = link.attr("href").toLowerCase()
       href = if (href.startsWith("http://")) href; else SITE_URL + href;
-      if (!text.isEmpty() && href.startsWith(SITE_URL)) {
+      if (href.startsWith(SITE_URL)) {
         if (!setOfLinksAlreadyVisited.contains(href))
           setOfLinksToBeVisited += href
-        //println(text + " [ " + href + " ]")
       }
     }
   
