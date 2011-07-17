@@ -62,6 +62,8 @@ object Crawler {
         val relativeURLPattern3 = """^./(.+)""".r
         val relativeURLPattern4 = """^../(.+)""".r
         val relativeURLPattern5 = """(.+)""".r
+        val fragmentPattern     = """(.*)\#.*""".r
+
         href match {
           case fullURLPattern(matchingStr)       => return href
 
@@ -82,6 +84,15 @@ object Crawler {
             var index = pageUrl.lastIndexOf("/")
             href = fixAndGetLink( matchingStr, pageUrl.substring(0, index))
             println("########## Rel4 pattern match : " + href)
+            return href
+
+          case fragmentPattern(matchingStr)  => 
+            println("href         : " + href)
+            println("matchingStr  : " + matchingStr)
+            println("pageUrl      : " + pageUrl)
+            var tmpStr = matchingStr.trim()
+            href = if (!tmpStr.isEmpty) fixAndGetLink(tmpStr, pageUrl) else pageUrl
+            println("########## fragment pattern match : " + href)
             return href
 
           case relativeURLPattern5(matchingStr)  => 
