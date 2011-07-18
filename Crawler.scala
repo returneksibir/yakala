@@ -4,27 +4,32 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes._
 import collection.mutable.Set
 import util.Random
+import java.net.URLEncoder
+
 
 object Crawler {
   
   val SITE_URL            = "http://www.pandora.com.tr/"
+  val STORE_ID            = 4
   val BOOK_NAME_PATH      = "div.kitaptitle2 > h1"
   val BOOK_PRICE_PATH     = "span.fiyat"
   val BOOK_ISBN_PATH      = "span#ContentPlaceHolderMainOrta_LabelIsbn"
   val BOOK_PAGE_PATTERN   = "http://www.pandora.com.tr/urun/"
   val MIN_WAIT_TIME_IN_MS = 100
   val MAX_WAIT_TIME_IN_MS = 500
+  val BOOK_SERVICE_ADDRESS = "http://rimbiskitapsever.appspot.com/book"
+  //val BOOK_SERVICE_ADDRESS = "http://localhost:8080/book"
 
-  def selectAndPrintProductInfo(doc : Document) {
+  def selectAndPrintProductInfo(doc : Document, pageUrl : String) {
 
     val title     = doc.title();
     val bookName  = doc.select(BOOK_NAME_PATH).first()
     val bookPrice = doc.select(BOOK_PRICE_PATH).first()
     val isbn      = doc.select(BOOK_ISBN_PATH).first()
 
-    val txtBookPrice = try {
+    val strBookPrice = try {
       val Price = """(\S+) TL""".r
-      val Price(price) = bookPrice.text()
+      val Price(price) = bookPrice.text().trim().replace(",", ".")
       price
     } catch {
       case e : NullPointerException => println("Price information is not available"); return
@@ -32,10 +37,17 @@ object Crawler {
     }
 
     try {
+      var strIsbn = isbn.text().trim().replace("-", "")
+      val len = strIsbn.length()
+      strIsbn = if (len < 10) strIsbn else strIsbn.substring(len-10, len-1)
       println("------- " + title + " -------")
       println("Kitap = " + bookName.text())
-      println("ISBN  = " + isbn.text())
-      println("Fiyat = " + txtBookPrice + " TL")
+      println("ISBN  = " + strIsbn)
+      println("Fiyat = " + strBookPrice + " TL")
+      val urlParameters = "isbn=" + strIsbn + "&price=" + strBookPrice + "&link=" + URLEncoder.encode(pageUrl, "UTF-8") + "&store=" + STORE_ID;
+      val url = BOOK_SERVICE_ADDRESS + "?" + urlParameters
+      println("Connecting to " + url)
+      Jsoup.connect(url).execute()
     } catch {
       case e : NullPointerException => println("Düzgün biçimli kitap bilgisi bulunamadı.")
     }
@@ -124,7 +136,7 @@ object Crawler {
           val doc = Jsoup.connect(url).get()
   
           if (url.startsWith(BOOK_PAGE_PATTERN))
-            selectAndPrintProductInfo(doc)
+            selectAndPrintProductInfo(doc, url)
           
           var linksOnPage = getLinks(doc)
           linksOnPage = linksOnPage.filter{ link => (link.startsWith(SITE_URL) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
