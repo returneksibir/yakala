@@ -134,18 +134,19 @@ object Crawler {
               setOfLinksToBeVisited += link
           }
     
-          setOfLinksToBeVisited     -= url
-          setOfLinksAlreadyVisited  += url
-    
-          println("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
-          println("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
-
         } catch {
           case e : java.net.SocketTimeoutException => println(e.getMessage())
           case e : java.net.UnknownHostException => println(e.getMessage())
+          case e : java.io.IOException => println(e.getMessage())
         }
 
-        //Let's wait for a random time in the range between MIN_WAIT_TIME_IN_MS ~ MAX_WAIT_TIME_IN_MS ms
+        setOfLinksToBeVisited     -= url
+        setOfLinksAlreadyVisited  += url
+  
+        println("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
+        println("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
+
+       //Let's wait for a random time in the range between MIN_WAIT_TIME_IN_MS ~ MAX_WAIT_TIME_IN_MS ms
   
         val sleepTime = MIN_WAIT_TIME_IN_MS + Math.abs(random.nextInt()) % (MAX_WAIT_TIME_IN_MS - MIN_WAIT_TIME_IN_MS)
   
