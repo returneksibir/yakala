@@ -5,7 +5,7 @@ import org.jsoup.nodes._
 import collection.mutable.Set
 import util.Random
 import java.net.URLEncoder
-
+import yakala._
 
 object Crawler {
   
@@ -19,6 +19,7 @@ object Crawler {
   val MAX_WAIT_TIME_IN_MS = 500
   val BOOK_SERVICE_ADDRESS = "http://rimbiskitapsever.appspot.com/book"
   //val BOOK_SERVICE_ADDRESS = "http://localhost:8080/book"
+  val logger = new ConsoleLogger()
 
   def selectAndPrintProductInfo(doc : Document, pageUrl : String) {
 
@@ -32,24 +33,24 @@ object Crawler {
       val Price(price) = bookPrice.text().trim().replace(",", ".")
       price
     } catch {
-      case e : NullPointerException => println("Price information is not available"); return
-      case e : MatchError           => println("Price information is not in TL"); return
+      case e : NullPointerException => logger.info("Price information is not available"); return
+      case e : MatchError           => logger.info("Price information is not in TL"); return
     }
 
     try {
       var strIsbn = isbn.text().trim().replace("-", "")
       val len = strIsbn.length()
       strIsbn = if (len < 10) strIsbn else strIsbn.substring(len-10, len-1)
-      println("------- " + title + " -------")
-      println("Kitap = " + bookName.text())
-      println("ISBN  = " + strIsbn)
-      println("Fiyat = " + strBookPrice + " TL")
+      logger.info("------- " + title + " -------")
+      logger.info("Kitap = " + bookName.text())
+      logger.info("ISBN  = " + strIsbn)
+      logger.info("Fiyat = " + strBookPrice + " TL")
       val urlParameters = "isbn=" + strIsbn + "&price=" + strBookPrice + "&link=" + URLEncoder.encode(pageUrl, "UTF-8") + "&store=" + STORE_ID;
       val url = BOOK_SERVICE_ADDRESS + "?" + urlParameters
-      println("Connecting to " + url)
+      logger.debug("Connecting to " + url)
       Jsoup.connect(url).execute()
     } catch {
-      case e : NullPointerException => println("Düzgün biçimli kitap bilgisi bulunamadı.")
+      case e : NullPointerException => logger.info("Düzgün biçimli kitap bilgisi bulunamadı.")
     }
 
   }
@@ -76,50 +77,43 @@ object Crawler {
         val relativeURLPattern5 = """(.+)""".r
         val fragmentPattern     = """(.*)\#.*""".r
 
+        logger.debug("href         : " + href)
+        logger.debug("pageUrl      : " + pageUrl)
+
         href match {
           case fullURLPattern(matchingStr)       => return href
 
           case relativeURLPattern2(matchingStr)  => return SITE_URL + matchingStr
 
           case relativeURLPattern3(matchingStr)  => 
-            println("href         : " + href)
-            println("matchingStr  : " + matchingStr)
-            println("pageUrl      : " + pageUrl)
+            logger.debug("matchingStr  : " + matchingStr)
             href = fixAndGetLink( matchingStr, pageUrl)
-            println("Rel3 pattern match : " + href)
             return href
 
           case relativeURLPattern4(matchingStr)  => 
-            println("href         : " + href)
-            println("matchingStr  : " + matchingStr)
-            println("pageUrl      : " + pageUrl)
+            logger.debug("matchingStr  : " + matchingStr)
             var index = pageUrl.lastIndexOf("/")
             href = fixAndGetLink( matchingStr, pageUrl.substring(0, index))
-            println("########## Rel4 pattern match : " + href)
             return href
 
           case fragmentPattern(matchingStr)  => 
-            println("href         : " + href)
-            println("matchingStr  : " + matchingStr)
-            println("pageUrl      : " + pageUrl)
+            logger.debug("matchingStr  : " + matchingStr)
             var tmpStr = matchingStr.trim()
             href = if (!tmpStr.isEmpty) fixAndGetLink(tmpStr, pageUrl) else pageUrl
-            println("########## fragment pattern match : " + href)
             return href
 
           case relativeURLPattern5(matchingStr)  => 
-            println("href         : " + href)
-            println("matchingStr  : " + matchingStr)
-            println("pageUrl      : " + pageUrl)
+            logger.debug("matchingStr  : " + matchingStr)
             val index = pageUrl.lastIndexOf("/")
             href = pageUrl.substring(0, index) + "/" + matchingStr
-            println("########## Rel5 pattern match : " + href)
             return href
         }
   }
 
   def main(args : Array[String]) {
     val url = args(0)
+
+    logger.setLogLevel(Logger.LOG_INFO)
 
     val setOfLinksToBeVisited : Set[String]  = Set(url)
     val setOfLinksAlreadyVisited : Set[String] = Set()
@@ -131,7 +125,7 @@ object Crawler {
       
         try {
 
-          println("Sayfa :" + url)
+          logger.info("Sayfa :" + url)
     
           val doc = Jsoup.connect(url).get()
   
@@ -147,16 +141,16 @@ object Crawler {
           }
     
         } catch {
-          case e : java.net.SocketTimeoutException => println(e.getMessage())
-          case e : java.net.UnknownHostException => println(e.getMessage())
-          case e : java.io.IOException => println(e.getMessage())
+          case e : java.net.SocketTimeoutException  => logger.debug("Exception :" + e.getMessage())
+          case e : java.net.UnknownHostException    => logger.debug("Exception :" + e.getMessage())
+          case e : java.io.IOException              => logger.debug("Exception :" + e.getMessage())
         }
 
         setOfLinksToBeVisited     -= url
         setOfLinksAlreadyVisited  += url
   
-        println("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
-        println("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
+        logger.debug("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
+        logger.debug("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
 
        //Let's wait for a random time in the range between MIN_WAIT_TIME_IN_MS ~ MAX_WAIT_TIME_IN_MS ms
   
