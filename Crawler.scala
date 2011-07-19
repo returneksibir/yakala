@@ -68,8 +68,7 @@ object Crawler {
     return linksSet
   }
 
-  def fixAndGetLink(url : String, pageUrl : String) : String = {
-        var href = url
+  def MakeUrl(pageUrl : String, href : String) : String = {
         val fullURLPattern = """http://(.+)""".r
         val relativeURLPattern2 = """^/(.+)""".r
         val relativeURLPattern3 = """^./(.+)""".r
@@ -87,28 +86,26 @@ object Crawler {
 
           case relativeURLPattern3(matchingStr)  => 
             logger.debug("matchingStr  : " + matchingStr)
-            href = fixAndGetLink( matchingStr, pageUrl)
-            return href
+            return MakeUrl( matchingStr, pageUrl)
 
           case relativeURLPattern4(matchingStr)  => 
             logger.debug("matchingStr  : " + matchingStr)
             var index = pageUrl.lastIndexOf("/")
-            href = fixAndGetLink( matchingStr, pageUrl.substring(0, index))
-            return href
+            return MakeUrl( matchingStr, pageUrl.substring(0, index))
 
           case fragmentPattern(matchingStr)  => 
             logger.debug("matchingStr  : " + matchingStr)
             var tmpStr = matchingStr.trim()
-            href = if (!tmpStr.isEmpty) fixAndGetLink(tmpStr, pageUrl) else pageUrl
-            return href
+            return if (!tmpStr.isEmpty) MakeUrl(tmpStr, pageUrl) else pageUrl
 
           case relativeURLPattern5(matchingStr)  => 
             logger.debug("matchingStr  : " + matchingStr)
             val index = pageUrl.lastIndexOf("/")
-            href = pageUrl.substring(0, index) + "/" + matchingStr
-            return href
+            return pageUrl.substring(0, index) + "/" + matchingStr
         }
   }
+
+  def isProductPage(pageUrl : String) : Boolean = { pageUrl.startsWith(BOOK_PAGE_PATTERN) }
 
   def main(args : Array[String]) {
     val url = args(0)
@@ -129,13 +126,13 @@ object Crawler {
     
           val doc = Jsoup.connect(url).get()
   
-          if (url.startsWith(BOOK_PAGE_PATTERN))
+          if (isProductPage(url))
             selectAndPrintProductInfo(doc, url)
           
           var linksOnPage = getLinks(doc)
           linksOnPage = linksOnPage.filter{ link => (link.startsWith(SITE_URL) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
           linksOnPage.foreach{ href => 
-            val link = fixAndGetLink(href, url) 
+            val link = MakeUrl(url, href) 
             if (!setOfLinksAlreadyVisited.contains(link))
               setOfLinksToBeVisited += link
           }
