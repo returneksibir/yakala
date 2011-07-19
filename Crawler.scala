@@ -1,3 +1,5 @@
+package yakala
+
 import io.Source
 import io._
 import org.jsoup.Jsoup
@@ -5,7 +7,7 @@ import org.jsoup.nodes._
 import collection.mutable.Set
 import util.Random
 import java.net.URLEncoder
-import yakala._
+
 
 object Crawler {
   
