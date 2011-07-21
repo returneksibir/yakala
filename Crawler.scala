@@ -6,17 +6,21 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes._
 import collection.mutable.Set
 import util.Random
-import java.net.URLEncoder
+import yakala.db._
 
-class Book (price : String, isbn : String) {
+class Book (price : String, isbn : String, url : String, storeID : Int) {
 
-  def price() : String = price
-  def isbn()  : String = isbn
+  def price()   : String  = price
+  def isbn()    : String  = isbn
+  def url()     : String  = url
+  def storeID() : Int     = storeID
 
   def print(logger : Logger) {
-    logger.info("ISBN  = " + isbn)
-    logger.info("Fiyat = " + price + " TL")
- }
+    logger.info("ISBN   = " + isbn)
+    logger.info("Fiyat  = " + price + " TL")
+    logger.info("Url    = " + url)
+    logger.info("Store  = " + storeID)
+  }
 }
 
 object Crawler {
@@ -29,9 +33,9 @@ object Crawler {
   val BOOK_PAGE_PATTERN   = "http://www.pandora.com.tr/urun/"
   val MIN_WAIT_TIME_IN_MS = 100
   val MAX_WAIT_TIME_IN_MS = 500
-  val BOOK_SERVICE_ADDRESS = "http://rimbiskitapsever.appspot.com/book"
-  //val BOOK_SERVICE_ADDRESS = "http://localhost:8080/book"
-  val logger = new ConsoleLogger()
+
+  val logger : Logger     = new ConsoleLogger()
+  val bookDB : BookDB     = new DummyBookDB(logger)
 
   def getBook(doc : Document, pageUrl : String) : Book  = {
 
@@ -42,7 +46,7 @@ object Crawler {
       val PricePattern(price) = bookPrice
       val len = isbn.length()
       isbn = if (len < 10) isbn else isbn.substring(len-10, len-1)
-      new Book(price, isbn)
+      new Book(price, isbn, pageUrl, STORE_ID)
     } catch {
       case e : NullPointerException => throw new Exception("Düzgün biçimli kitap bilgisi bulunamadı.")
       case e : MatchError           => throw new Exception("Price information is not in TL")
@@ -102,13 +106,6 @@ object Crawler {
 
   def isProductPage(pageUrl : String) : Boolean = { pageUrl.startsWith(BOOK_PAGE_PATTERN) }
 
-  def saveBook(book : Book, urlOfBook : String) {
-    val urlParameters = "isbn=" + book.isbn + "&price=" + book.price + "&link=" + URLEncoder.encode(urlOfBook, "UTF-8") + "&store=" + STORE_ID;
-    val url = BOOK_SERVICE_ADDRESS + "?" + urlParameters
-    logger.debug("Connecting to " + url)
-    Jsoup.connect(url).execute()
-  }
-
   def main(args : Array[String]) {
     val url = args(0)
 
@@ -134,7 +131,7 @@ object Crawler {
             try {
               val book = getBook(doc, url)
               book.print(logger)
-              saveBook(book, url)
+              bookDB.save(book)
             } catch {
               case e => logger.info(e.getMessage())
             }
