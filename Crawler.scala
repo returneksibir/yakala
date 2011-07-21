@@ -8,10 +8,20 @@ import collection.mutable.Set
 import util.Random
 import java.net.URLEncoder
 
+class Book (price : String, isbn : String) {
+
+  def price() : String = price
+  def isbn()  : String = isbn
+
+  def print(logger : Logger) {
+    logger.info("ISBN  = " + isbn)
+    logger.info("Fiyat = " + price + " TL")
+ }
+}
 
 object Crawler {
   
-  val SITE_URL            = "http://www.pandora.com.tr/"
+  val STORE_URL           = "http://www.pandora.com.tr/"
   val STORE_ID            = 4
   val BOOK_NAME_PATH      = "div.kitaptitle2 > h1"
   val BOOK_PRICE_PATH     = "span.fiyat"
@@ -23,39 +33,22 @@ object Crawler {
   //val BOOK_SERVICE_ADDRESS = "http://localhost:8080/book"
   val logger = new ConsoleLogger()
 
-  def selectAndPrintProductInfo(doc : Document, pageUrl : String) {
-
-    val title     = doc.title();
-    val bookName  = doc.select(BOOK_NAME_PATH).first()
-    val bookPrice = doc.select(BOOK_PRICE_PATH).first()
-    val isbn      = doc.select(BOOK_ISBN_PATH).first()
-
-    val strBookPrice = try {
-      val Price = """(\S+) TL""".r
-      val Price(price) = bookPrice.text().trim().replace(",", ".")
-      price
-    } catch {
-      case e : NullPointerException => logger.info("Price information is not available"); return
-      case e : MatchError           => logger.info("Price information is not in TL"); return
-    }
+  def getBook(doc : Document, pageUrl : String) : Book  = {
 
     try {
-      var strIsbn = isbn.text().trim().replace("-", "")
-      val len = strIsbn.length()
-      strIsbn = if (len < 10) strIsbn else strIsbn.substring(len-10, len-1)
-      logger.info("------- " + title + " -------")
-      logger.info("Kitap = " + bookName.text())
-      logger.info("ISBN  = " + strIsbn)
-      logger.info("Fiyat = " + strBookPrice + " TL")
-      val urlParameters = "isbn=" + strIsbn + "&price=" + strBookPrice + "&link=" + URLEncoder.encode(pageUrl, "UTF-8") + "&store=" + STORE_ID;
-      val url = BOOK_SERVICE_ADDRESS + "?" + urlParameters
-      logger.debug("Connecting to " + url)
-      Jsoup.connect(url).execute()
+      val bookPrice = doc.select(BOOK_PRICE_PATH).first().text().trim().replace(",", ".")
+      var isbn      = doc.select(BOOK_ISBN_PATH).first().text().trim().replace("-", "")
+      val PricePattern = """(\S+) TL""".r
+      val PricePattern(price) = bookPrice
+      val len = isbn.length()
+      isbn = if (len < 10) isbn else isbn.substring(len-10, len-1)
+      new Book(price, isbn)
     } catch {
-      case e : NullPointerException => logger.info("Düzgün biçimli kitap bilgisi bulunamadı.")
+      case e : NullPointerException => throw new Exception("Düzgün biçimli kitap bilgisi bulunamadı.")
+      case e : MatchError           => throw new Exception("Price information is not in TL")
     }
-
   }
+
 
   def getLinks(doc : Document) : collection.immutable.Set[String] = {
     var linksSet : collection.immutable.Set[String] = collection.immutable.Set()
@@ -84,7 +77,7 @@ object Crawler {
         href match {
           case fullURLPattern(matchingStr)       => return href
 
-          case relativeURLPattern2(matchingStr)  => return SITE_URL + matchingStr
+          case relativeURLPattern2(matchingStr)  => return STORE_URL + matchingStr
 
           case relativeURLPattern3(matchingStr)  => 
             logger.debug("matchingStr  : " + matchingStr)
@@ -109,6 +102,13 @@ object Crawler {
 
   def isProductPage(pageUrl : String) : Boolean = { pageUrl.startsWith(BOOK_PAGE_PATTERN) }
 
+  def saveBook(book : Book, urlOfBook : String) {
+    val urlParameters = "isbn=" + book.isbn + "&price=" + book.price + "&link=" + URLEncoder.encode(urlOfBook, "UTF-8") + "&store=" + STORE_ID;
+    val url = BOOK_SERVICE_ADDRESS + "?" + urlParameters
+    logger.debug("Connecting to " + url)
+    Jsoup.connect(url).execute()
+  }
+
   def main(args : Array[String]) {
     val url = args(0)
 
@@ -128,11 +128,20 @@ object Crawler {
     
           val doc = Jsoup.connect(url).get()
   
-          if (isProductPage(url))
-            selectAndPrintProductInfo(doc, url)
-          
+          if (isProductPage(url)) {
+            val title     = doc.title();
+            logger.info("------- " + title + " -------")
+            try {
+              val book = getBook(doc, url)
+              book.print(logger)
+              saveBook(book, url)
+            } catch {
+              case e => logger.info(e.getMessage())
+            }
+          }
+
           var linksOnPage = getLinks(doc)
-          linksOnPage = linksOnPage.filter{ link => (link.startsWith(SITE_URL) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
+          linksOnPage = linksOnPage.filter{ link => (link.startsWith(STORE_URL) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
           linksOnPage.foreach{ href => 
             val link = MakeUrl(url, href) 
             if (!setOfLinksAlreadyVisited.contains(link))
