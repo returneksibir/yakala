@@ -2,7 +2,6 @@ package yakala
 
 import yakala.db._
 import yakala.spiders._
-import yakala.settings._
 import yakala.crawler._
 
 object Yakala {

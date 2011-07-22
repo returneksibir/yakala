@@ -1,4 +1,4 @@
-package yakala.settings
+package yakala
 
 object Settings {
   val MIN_WAIT_TIME_IN_MS = 100
