@@ -1,58 +1,19 @@
-package yakala
+package yakala.crawler
 
 import io.Source
 import io._
 import org.jsoup.Jsoup
 import org.jsoup.nodes._
 import collection.mutable.Set
+import collection.immutable.Map
 import util.Random
 import yakala.db._
+import yakala.spiders._
+import yakala.settings._
 
-class Book (price : String, isbn : String, url : String, storeID : Int) {
-
-  def price()   : String  = price
-  def isbn()    : String  = isbn
-  def url()     : String  = url
-  def storeID() : Int     = storeID
-
-  def print(logger : Logger) {
-    logger.info("ISBN   = " + isbn)
-    logger.info("Fiyat  = " + price + " TL")
-    logger.info("Url    = " + url)
-    logger.info("Store  = " + storeID)
-  }
-}
-
-object Crawler {
+class Crawler(logger : Logger, spider : Spider, bookDB : BookDB) {
   
-  val STORE_URL           = "http://www.pandora.com.tr/"
-  val STORE_ID            = 4
-  val BOOK_NAME_PATH      = "div.kitaptitle2 > h1"
-  val BOOK_PRICE_PATH     = "span.fiyat"
-  val BOOK_ISBN_PATH      = "span#ContentPlaceHolderMainOrta_LabelIsbn"
-  val BOOK_PAGE_PATTERN   = "http://www.pandora.com.tr/urun/"
-  val MIN_WAIT_TIME_IN_MS = 100
-  val MAX_WAIT_TIME_IN_MS = 500
-
-  val logger : Logger     = new ConsoleLogger()
-  val bookDB : BookDB     = new DummyBookDB(logger)
-
-  def getBook(doc : Document, pageUrl : String) : Book  = {
-
-    try {
-      val bookPrice = doc.select(BOOK_PRICE_PATH).first().text().trim().replace(",", ".")
-      var isbn      = doc.select(BOOK_ISBN_PATH).first().text().trim().replace("-", "")
-      val PricePattern = """(\S+) TL""".r
-      val PricePattern(price) = bookPrice
-      val len = isbn.length()
-      isbn = if (len < 10) isbn else isbn.substring(len-10, len-1)
-      new Book(price, isbn, pageUrl, STORE_ID)
-    } catch {
-      case e : NullPointerException => throw new Exception("Düzgün biçimli kitap bilgisi bulunamadı.")
-      case e : MatchError           => throw new Exception("Price information is not in TL")
-    }
-  }
-
+  private val random = new Random()
 
   def getLinks(doc : Document) : collection.immutable.Set[String] = {
     var linksSet : collection.immutable.Set[String] = collection.immutable.Set()
@@ -81,7 +42,7 @@ object Crawler {
         href match {
           case fullURLPattern(matchingStr)       => return href
 
-          case relativeURLPattern2(matchingStr)  => return STORE_URL + matchingStr
+          case relativeURLPattern2(matchingStr)  => return spider.domainName + matchingStr
 
           case relativeURLPattern3(matchingStr)  => 
             logger.debug("matchingStr  : " + matchingStr)
@@ -104,17 +65,9 @@ object Crawler {
         }
   }
 
-  def isProductPage(pageUrl : String) : Boolean = { pageUrl.startsWith(BOOK_PAGE_PATTERN) }
-
-  def main(args : Array[String]) {
-    val url = args(0)
-
-    logger.setLogLevel(Logger.LOG_INFO)
-
-    val setOfLinksToBeVisited : Set[String]  = Set(url)
+  def run(startURL : String) {
+    val setOfLinksToBeVisited : Set[String]  = Set(startURL)
     val setOfLinksAlreadyVisited : Set[String] = Set()
-
-    val random = new Random()
 
     while (!setOfLinksToBeVisited.isEmpty) {
       setOfLinksToBeVisited foreach { url =>
@@ -125,11 +78,12 @@ object Crawler {
     
           val doc = Jsoup.connect(url).get()
   
-          if (isProductPage(url)) {
+          if (spider.isProductPage(url)) {
             val title     = doc.title();
             logger.info("------- " + title + " -------")
             try {
-              val book = getBook(doc, url)
+              val bookMap = spider.processItem(doc)
+              val book = new Book(bookMap("price"), bookMap("isbn"), url, bookMap("STORE_ID"))
               book.print(logger)
               bookDB.save(book)
             } catch {
@@ -138,7 +92,7 @@ object Crawler {
           }
 
           var linksOnPage = getLinks(doc)
-          linksOnPage = linksOnPage.filter{ link => (link.startsWith(STORE_URL) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
+          linksOnPage = linksOnPage.filter{ link => (link.startsWith(spider.domainName) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
           linksOnPage.foreach{ href => 
             val link = MakeUrl(url, href) 
             if (!setOfLinksAlreadyVisited.contains(link))
@@ -157,13 +111,16 @@ object Crawler {
         logger.debug("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
         logger.debug("Gezilecek sayfa sayısı : " + setOfLinksToBeVisited.size)
 
-       //Let's wait for a random time in the range between MIN_WAIT_TIME_IN_MS ~ MAX_WAIT_TIME_IN_MS ms
-  
-        val sleepTime = MIN_WAIT_TIME_IN_MS + Math.abs(random.nextInt()) % (MAX_WAIT_TIME_IN_MS - MIN_WAIT_TIME_IN_MS)
-  
-        Thread.sleep(sleepTime)
+        sleepForAWhile()
       }
     }
+  }
+  def sleepForAWhile() {
+    //Let's wait for a random time in the range between MIN_WAIT_TIME_IN_MS ~ MAX_WAIT_TIME_IN_MS ms
+
+    val sleepTime = Settings.MIN_WAIT_TIME_IN_MS + Math.abs(random.nextInt()) % (Settings.MAX_WAIT_TIME_IN_MS - Settings.MIN_WAIT_TIME_IN_MS)
+
+    Thread.sleep(sleepTime)
   }
 }
 
