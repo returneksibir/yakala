@@ -9,7 +9,7 @@ import collection.immutable.Map
 import util.Random
 import yakala.db._
 import yakala.spiders._
-import yakala.settings._
+import yakala.Settings
 
 class Crawler(logger : Logger, spider : Spider, bookDB : BookDB) {
   
