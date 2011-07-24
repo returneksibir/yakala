@@ -1,6 +1,6 @@
 package yakala
 
-import yakala.db._
+import yakala.pipelines._
 import yakala.spiders._
 import yakala.crawler._
 import yakala.logging._
@@ -11,13 +11,13 @@ object Yakala {
 
     val url = args(0)
 
-    val logger : Logger     = new ConsoleLogger()
-    val bookDB : BookDB     = new DummyBookDB(logger)
-    val spider : Spider     = new PandoraSpider()
+    val logger    : Logger       = new ConsoleLogger()
+    val pipeline  : ItemPipeline = new DummyBookDB(logger)
+    val spider    : Spider       = new PandoraSpider()
 
     logger.setLogLevel(Logger.LOG_DEBUG)
 
-    new Crawler(logger, spider, bookDB).run(url)
+    new Crawler(logger, spider, pipeline).run(url)
   }
 
 }

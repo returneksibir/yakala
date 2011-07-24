@@ -1,9 +1,9 @@
-package yakala.db
+package yakala.pipelines
 
 import yakala.logging.Logger
 
-trait BookDB {
-  def save(book : Book)
+trait ItemPipeline {
+  def processItem(book : Book)
 }
 
 class Book (price : String, isbn : String, url : String, storeID : String) {

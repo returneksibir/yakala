@@ -1,7 +1,7 @@
 package yakala.crawler
 
 import yakala.logging.Logger
-import yakala.db._
+import yakala.pipelines._
 import yakala.spiders._
 import yakala.Settings
 import io.Source
@@ -12,7 +12,7 @@ import collection.mutable.Set
 import collection.immutable.Map
 import util.Random
 
-class Crawler(logger : Logger, spider : Spider, bookDB : BookDB) {
+class Crawler(logger : Logger, spider : Spider, pipeline : ItemPipeline) {
   
   private val random = new Random()
 
@@ -86,7 +86,7 @@ class Crawler(logger : Logger, spider : Spider, bookDB : BookDB) {
               val bookMap = spider.processItem(doc)
               val book = new Book(bookMap("price"), bookMap("isbn"), url, bookMap("STORE_ID"))
               book.print(logger)
-              bookDB.save(book)
+              pipeline.processItem(book)
             } catch {
               case e => logger.info(e.getMessage())
             }

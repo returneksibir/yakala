@@ -4,9 +4,9 @@ SOURCES= \
 	yakala/crawler/Crawler.scala \
 	yakala/logging/Logger.scala \
 	yakala/logging/ConsoleLogger.scala \
-	yakala/db/BookDB.scala \
-	yakala/db/DummyBookDB.scala \
-	yakala/db/GoogleAppEngineBookDB.scala \
+	yakala/pipelines/ItemPipeline.scala \
+	yakala/pipelines/DummyBookDB.scala \
+	yakala/pipelines/GoogleAppEngineBookDB.scala \
 	yakala/spiders/Spider.scala \
 	yakala/Settings.scala
 
