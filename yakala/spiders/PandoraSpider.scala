@@ -1,9 +1,10 @@
 package yakala.spiders
 
-import org.jsoup.nodes._
+import yakala.logging.Logger
+import org.jsoup.nodes.Document
 
 
-class PandoraSpider extends Spider {
+class PandoraSpider(logger : Logger) extends Spider {
   private val STORE_URL           = "http://www.pandora.com.tr/"
   private val BOOK_PRICE_PATH     = "span.fiyat"
   private val BOOK_ISBN_PATH      = "span#ContentPlaceHolderMainOrta_LabelIsbn"
@@ -14,6 +15,8 @@ class PandoraSpider extends Spider {
   def domainName() : String = STORE_URL
   
   def processItem(doc : Document) : Map[String, String] = {
+    val title    = doc.title();
+    logger.info("------- " + title + " -------")
     try {
       val bookPrice = doc.select(BOOK_PRICE_PATH).first().text().trim().replace(",", ".")
       var isbn      = doc.select(BOOK_ISBN_PATH).first().text().trim().replace("-", "")

@@ -12,12 +12,15 @@ object Yakala {
     val url = args(0)
 
     val logger    : Logger       = new ConsoleLogger()
-    val pipeline  : ItemPipeline = new DummyBookDB(logger)
-    val spider    : Spider       = new PandoraSpider()
-
     logger.setLogLevel(Logger.LOG_INFO)
 
-    new Crawler(logger, spider, pipeline).run(url)
+    val pipeline  : ItemPipeline = new DummyBookDB(logger)
+    val spider    : Spider       = new PandoraSpider(logger)
+    spider.start
+
+    val crawler = new Crawler(logger, spider, pipeline)
+    crawler.start
+    crawler ! url
   }
 
 }
