@@ -1,5 +1,6 @@
 package yakala.db
 
+import yakala.logging.Logger
 import java.net.URLEncoder
 import org.jsoup.Jsoup
 

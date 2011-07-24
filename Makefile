@@ -3,6 +3,7 @@ SOURCES= \
 	yakala/Yakala.scala \
 	yakala/crawler/Crawler.scala \
 	yakala/logging/Logger.scala \
+	yakala/logging/ConsoleLogger.scala \
 	yakala/db/BookDB.scala \
 	yakala/spiders/Spider.scala \
 	yakala/Settings.scala

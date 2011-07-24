@@ -1,5 +1,9 @@
 package yakala.crawler
 
+import yakala.logging.Logger
+import yakala.db._
+import yakala.spiders._
+import yakala.Settings
 import io.Source
 import io._
 import org.jsoup.Jsoup
@@ -7,9 +11,6 @@ import org.jsoup.nodes._
 import collection.mutable.Set
 import collection.immutable.Map
 import util.Random
-import yakala.db._
-import yakala.spiders._
-import yakala.Settings
 
 class Crawler(logger : Logger, spider : Spider, bookDB : BookDB) {
   
