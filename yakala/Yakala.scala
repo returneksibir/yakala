@@ -15,7 +15,7 @@ object Yakala {
     val pipeline  : ItemPipeline = new DummyBookDB(logger)
     val spider    : Spider       = new PandoraSpider()
 
-    logger.setLogLevel(Logger.LOG_DEBUG)
+    logger.setLogLevel(Logger.LOG_INFO)
 
     new Crawler(logger, spider, pipeline).run(url)
   }

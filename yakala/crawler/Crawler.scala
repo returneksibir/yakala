@@ -83,10 +83,9 @@ class Crawler(logger : Logger, spider : Spider, pipeline : ItemPipeline) {
             val title     = doc.title();
             logger.info("------- " + title + " -------")
             try {
-              val bookMap = spider.processItem(doc)
-              val book = new Book(bookMap("price"), bookMap("isbn"), url, bookMap("STORE_ID"))
-              book.print(logger)
-              pipeline.processItem(book)
+              var bookMap = spider.processItem(doc)
+              bookMap += "url" -> url
+              pipeline.processItem(bookMap)
             } catch {
               case e => logger.info(e.getMessage())
             }

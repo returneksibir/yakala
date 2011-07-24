@@ -21,7 +21,7 @@ class PandoraSpider extends Spider {
       val PricePattern(price) = bookPrice
       val len = isbn.length()
       isbn = if (len < 10) isbn else isbn.substring(len-10, len-1)
-      Map("price" ->  price, "isbn"  ->  isbn, "store" ->  STORE_ID.toString())
+      Map("price" ->  price, "isbn"  ->  isbn, "storeID" ->  STORE_ID.toString())
     } catch {
       case e : NullPointerException => throw new Exception("Düzgün biçimli kitap bilgisi bulunamadı.")
       case e : MatchError           => throw new Exception("Price information is not in TL")
