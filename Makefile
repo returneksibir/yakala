@@ -5,6 +5,8 @@ SOURCES= \
 	yakala/logging/Logger.scala \
 	yakala/logging/ConsoleLogger.scala \
 	yakala/db/BookDB.scala \
+	yakala/db/DummyBookDB.scala \
+	yakala/db/GoogleAppEngineBookDB.scala \
 	yakala/spiders/Spider.scala \
 	yakala/Settings.scala
 
