@@ -8,6 +8,7 @@ SOURCES= \
 	yakala/pipelines/DummyBookDB.scala \
 	yakala/pipelines/GoogleAppEngineBookDB.scala \
 	yakala/spiders/Spider.scala \
+	yakala/spiders/PandoraSpider.scala \
 	yakala/Settings.scala
 
 CP=-cp jsoup-1.6.1.jar:.
