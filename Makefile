@@ -9,6 +9,7 @@ SOURCES= \
 	yakala/pipelines/GoogleAppEngineBookDB.scala \
 	yakala/spiders/Spider.scala \
 	yakala/spiders/PandoraSpider.scala \
+	yakala/spiders/ImgeSpider.scala \
 	yakala/Settings.scala
 
 CP=-cp jsoup-1.6.1.jar:.
@@ -23,4 +24,4 @@ build:
 	scalac $(FLAGS) $(CP) $(SOURCES)
 
 run:
-	time scala -cp ./jsoup-1.6.1.jar:. yakala.Yakala http://www.pandora.com.tr/Cok_Satan_Kitaplar
+	time scala -cp ./jsoup-1.6.1.jar:. yakala.Yakala http://www.imge.com.tr/

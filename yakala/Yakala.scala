@@ -14,8 +14,8 @@ object Yakala {
     val logger    : Logger       = new ConsoleLogger()
     logger.setLogLevel(Logger.LOG_INFO)
 
-    val pipeline  : ItemPipeline = new DummyBookDB(logger)
-    val spider    : Spider       = new PandoraSpider(logger)
+    val pipeline  : ItemPipeline = new GoogleAppEngineBookDB(logger)
+    val spider    : Spider       = new ImgeSpider(logger)
     spider.start
 
     val crawler = new Crawler(logger, spider, pipeline)

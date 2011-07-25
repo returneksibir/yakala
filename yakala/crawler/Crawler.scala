@@ -22,7 +22,7 @@ class Crawler(logger : Logger, spider : Spider, pipeline : ItemPipeline) extends
           if (!setOfLinksAlreadyVisited.contains(url)) {
             spider ! url
             setOfLinksAlreadyVisited  += url
-            logger.info("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
+            logger.debug("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
           }
         case _ => 
           require(false)
