@@ -1,5 +1,6 @@
 package yakala.spiders
 
+import yakala.Settings
 import yakala.logging._
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
