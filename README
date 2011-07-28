@@ -1,1 +1,13 @@
 A humble web crawler.
+
+In order to build the application you need to run the following command on the root folder of the project:
+
+make build
+
+There are are 4 explicit make targets:
+
+clean: Removes *.class files and thus cleans the project
+build: Builds the project
+run  : Runs the project
+
+all  : The default target. Runs all 3 targets above.
