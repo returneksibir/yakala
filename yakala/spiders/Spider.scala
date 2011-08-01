@@ -44,7 +44,7 @@ trait Spider extends Actor {
     href match {
       case fullURLPattern(matchingStr)       => return href
 
-      case relativeURLPattern2(matchingStr)  => return domainName + matchingStr
+      case relativeURLPattern2(matchingStr)  => return "http://www." + domainName + "/" + matchingStr
 
       case relativeURLPattern3(matchingStr)  => 
         logger.debug("matchingStr  : " + matchingStr)
@@ -85,7 +85,7 @@ trait Spider extends Actor {
       }
 
       var linksOnPage = getLinks(doc)
-      linksOnPage = linksOnPage.filter{ link => (link.startsWith(domainName) || (!link.startsWith("http://") && !link.startsWith("javascript:")))}
+      linksOnPage = linksOnPage.filter{ link => link.startsWith("http://" + domainName) || link.startsWith("http://www." + domainName) || (!link.startsWith("http://") && !link.startsWith("javascript:"))}
       linksOnPage.foreach{ href => 
         val link = MakeUrl(url, href) 
         sender ! link

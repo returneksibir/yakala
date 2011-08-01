@@ -5,14 +5,14 @@ import org.jsoup.nodes.Document
 
 
 class PandoraSpider(logger : Logger) extends Spider {
-  private val STORE_URL           = "http://www.pandora.com.tr/"
+  private val DOMAIN_NAME         = "pandora.com.tr"
   private val BOOK_PRICE_PATH     = "span.fiyat"
   private val BOOK_ISBN_PATH      = "span#ContentPlaceHolderMainOrta_LabelIsbn"
   private val STORE_ID            = 4
   private val BOOK_PAGE_PATTERN   = "http://www.pandora.com.tr/urun/"
 
   def isProductPage(pageUrl : String) : Boolean = { pageUrl.startsWith(BOOK_PAGE_PATTERN) }
-  def domainName() : String = STORE_URL
+  def domainName() : String = DOMAIN_NAME
   
   def processItem(doc : Document) : Map[String, String] = {
     val title    = doc.title();
