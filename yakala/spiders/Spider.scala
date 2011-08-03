@@ -85,7 +85,11 @@ trait Spider extends Actor {
       }
 
       var linksOnPage = getLinks(doc)
-      linksOnPage = linksOnPage.filter{ link => link.startsWith("http://" + domainName) || link.startsWith("http://www." + domainName) || (!link.startsWith("http://") && !link.startsWith("javascript:"))}
+      linksOnPage = linksOnPage.filter{ link => 
+        link.startsWith("http://" + domainName) ||
+        link.startsWith("http://www." + domainName) ||
+        (!link.startsWith("http://") && !link.startsWith("javascript:") && !link.startsWith("mailto:"))
+      }
       linksOnPage.foreach{ href => 
         val link = MakeUrl(url, href) 
         sender ! link
