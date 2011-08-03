@@ -14,7 +14,11 @@ class GoogleAppEngineBookDB(logger : Logger) extends ItemPipeline {
     val urlParameters = "isbn=" + item("isbn") + "&price=" + item("price") + "&link=" + URLEncoder.encode(item("url"), "UTF-8") + "&store=" + item("storeID");
     val url = BOOK_SERVICE_ADDRESS + "?" + urlParameters
     logger.debug("Connecting to " + url)
-    Jsoup.connect(url).execute()
+    try {
+      Jsoup.connect(url).execute()
+    } catch {
+      case e  => logger.debug("Exception :" + e.getMessage())
+    }
   }
 }
 
