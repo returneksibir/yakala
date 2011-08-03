@@ -14,13 +14,21 @@ object Yakala {
     val logger    : Logger       = new ConsoleLogger()
     logger.setLogLevel(Logger.LOG_INFO)
 
-    val pipeline  : ItemPipeline = new GoogleAppEngineBookDB(logger)
-    val spider    : Spider       = new ImgeSpider(logger)
-    spider.start
+    val spiders = List( new PandoraSpider(logger), new ImgeSpider(logger) )
 
-    val crawler = new Crawler(logger, spider, pipeline)
+    val pipeline  : ItemPipeline = new GoogleAppEngineBookDB(logger)
+
+    val crawler = new Crawler(logger, pipeline)
     crawler.start
-    crawler ! url
+
+    args.foreach{ domainName => 
+      spiders.foreach{ spider =>
+        if (domainName == spider.domainName) {
+          spider.start
+          crawler ! (spider, spider.startURL)
+        }
+      }
+    }
   }
 
 }

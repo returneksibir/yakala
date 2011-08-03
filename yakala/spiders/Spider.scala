@@ -9,7 +9,8 @@ import scala.actors.Actor._
 import util.Random
 
 trait Spider extends Actor {
-  def domainName() : String
+  def domainName()  : String
+  def startURL()    : String
   def processItem(doc : Document) : Map[String, String]
   def isProductPage(pageUrl : String) : Boolean
 
@@ -92,7 +93,7 @@ trait Spider extends Actor {
       }
       linksOnPage.foreach{ href => 
         val link = MakeUrl(url, href) 
-        sender ! link
+        sender ! (this, link)
       }
   
     } catch {
