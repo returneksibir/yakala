@@ -96,9 +96,7 @@ trait Spider extends Actor {
       }
   
     } catch {
-      case e : java.net.SocketTimeoutException  => logger.debug("Exception :" + e.getMessage())
-      case e : java.net.UnknownHostException    => logger.debug("Exception :" + e.getMessage())
-      case e : java.io.IOException              => logger.debug("Exception :" + e.getMessage())
+      case e  => logger.debug("Exception :" + e.getMessage())
     }
   }
 
