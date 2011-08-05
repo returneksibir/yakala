@@ -15,6 +15,8 @@ object ActorRegistry {
 }
 
 class A extends Actor {
+  this.start
+  
   override def start = {
     val actorId = super.start
     ActorRegistry.register(actorId, check _)
@@ -41,6 +43,8 @@ class A extends Actor {
 }
 
 class B extends Actor {
+  this.start
+  
   override def start = {
     val actorId = super.start
     ActorRegistry.register(actorId, check _)
@@ -89,9 +93,6 @@ object ActorDesignEx extends App with Actor {
   val a = new A
   val b = new B
   val actorId = this.start
-  a.start
-  b.start
-  
   val data_list = List(10, "olur mu ya!@!@!", List(1, 2, 3, 4), 6, 10)
   println("sending initial data " + data_list)
   data_list.foreach { data => 
