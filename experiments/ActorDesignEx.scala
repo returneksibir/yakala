@@ -1,57 +1,66 @@
 import scala.actors.Actor
 import scala.actors.Actor._
+import scala.reflect.Manifest
 
 object ActorRegistry {
-  private var objs: Map[String, (Any => Boolean)] = Map()
-  def register(K: String, V: (Any => Boolean)) {
+  private var objs: Map[Actor, (Any => Boolean)] = Map()
+  def register(K: Actor, V: (Any => Boolean)) {
     objs += (K -> V)
   }
 
-  def entries = objs
+  def filter(dt: Any): List[Actor] = {
+    val vl = dt.asInstanceOf[AnyRef].getClass
+    objs.filter{ case (k, v) => v(dt) }.keys.toList
+  }
 }
 
 class A extends Actor {
   override def start = {
-    ActorRegistry.register("deneme", check _)
-    super.start
+    val actorId = super.start
+    ActorRegistry.register(actorId, check _)
+    actorId
   }
 
   def act() {
     loop {
       react {
-	case msg: String =>
-	  println("int has come " + msg)
+	case v: Int =>
+	  println("incoming " + v)
       }
     }
   }
 
   def check(data: Any): Boolean = {
     data match {
-      case v: Int => println("this is int so im ok with it");true
-      case _ => println("no match");false
+      case v: Int => true
+      case _ => false
     }
   }
 }
 
 class B extends Actor {
   override def start = {
-    ActorRegistry.register("hop", check _)
-    super.start
+    val actorId = super.start
+    ActorRegistry.register(actorId, check _)
+    actorId
   }
 
   def act() {
     loop {
       react {
-	case num: Int =>
-	  println("int has come " + num)
+	case msg: String =>
+	  println("incoming str " + msg)
+	case vl: Int =>
+	  println("incoming list " + vl)
       }
     }
   }
 
   def check(data: Any): Boolean = {
     data match {
-      case v: String => println("it is string so nice"); true
-      case _ => println("no match, no good"); false
+      case v: String => true
+      case l: Int => true
+      case _ => false
     }
   }
 }
@@ -76,8 +85,6 @@ object ActorDesignEx extends App {
   a.start
   b.start
 
-  val data_list = List(10, "olur mu ya", List(1, 2, 3, 4))
-  val entries = ActorRegistry.entries
-  /* Iterate each elemen in data_list and test using tester function. */
-  data_list.foreach {data => println("testing data " + data + "\n" + entries.filter {case (k, v) => v(data)})}
+  val data_list = List(10, "olur mu ya", List(1, 2, 3, 4), 6, 10)
+  data_list.foreach( data => println("filtered actors " + ActorRegistry.filter(data)))
 }
