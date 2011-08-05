@@ -3,32 +3,35 @@ package yakala.crawler
 import yakala.logging.Logger
 import yakala.pipelines.ItemPipeline
 import yakala.spiders.Spider
+import yakala.registery._
 import collection.mutable.Set
 import collection.immutable.Map
 import scala.actors.Actor
 import scala.actors.Actor._
 
 
-class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
-  
+class Crawler(logger : Logger) extends Actor {
   private var setOfLinksAlreadyVisited : Set[String] = Set()
-
-  def crawlPage(spider : Spider, url : String)  {
-    if (!setOfLinksAlreadyVisited.contains(url)) {
-      spider ! url
-      setOfLinksAlreadyVisited  += url
-      logger.debug("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
-    }
-  }
+  private val actorId = this.start
 
   def act() {
     loop {
       react {
-        case item : Map[String, String]       => pipeline.processItem(item)
-        case (spider : Spider, url : String)  => crawlPage(spider, url)
-        case _                                => require(false)
+	case url: String => {
+	  if (!setOfLinksAlreadyVisited.contains(url)) {
+	    setOfLinksAlreadyVisited  += url
+	    val consumers = Registery.filter(url)
+	    logger.debug("[Crawler] Pushing url : " + url + " (pushed url count : " + setOfLinksAlreadyVisited.size + ")")
+	    consumers.foreach( _ ! (actorId, url) )
+	  }
+	}
+
+	case vl: Any => {
+	  val consumers = Registery.filter(vl)
+	  logger.debug("[Crawler] Consumer list: '" + consumers + "', relevant data : " + vl)
+	  consumers.foreach( _ ! (actorId, vl) )
+	}
       }
     }
   }
 }
-

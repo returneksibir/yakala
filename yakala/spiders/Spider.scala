@@ -2,6 +2,7 @@ package yakala.spiders
 
 import yakala.Settings
 import yakala.logging._
+import yakala.registery._
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import scala.actors.Actor
@@ -17,6 +18,7 @@ trait Spider extends Actor {
   private val random = new Random()
   private val logger : Logger = new ConsoleLogger()
   logger.setLogLevel(Logger.LOG_INFO)
+  this.start
 
   def getLinks(doc : Document) : collection.immutable.Set[String] = {
     var linksSet : collection.immutable.Set[String] = collection.immutable.Set()
@@ -68,18 +70,17 @@ trait Spider extends Actor {
     }
   }
 
-  def visitPage(url : String) {    
+  def visitPage(caller: Actor, url : String) {
     try {
 
       logger.info("Sayfa :" + url)
   
       val doc = Jsoup.connect(url).get()
-  
+
       if (isProductPage(url)) {
         try {
-          var bookMap  = processItem(doc)
-          bookMap += "url" -> url
-          sender ! bookMap
+          val bookMap  = processItem(doc) + ("url" -> url)
+	  caller ! bookMap
         } catch {
           case e => logger.info(e.getMessage())
         }
@@ -93,11 +94,11 @@ trait Spider extends Actor {
       }
       linksOnPage.foreach{ href => 
         val link = MakeUrl(url, href) 
-        sender ! (this, link)
+        caller ! link
       }
-  
+
     } catch {
-      case e  => logger.debug("Exception :" + e.getMessage())
+      case e  => logger.warning("Exception :" + e.getMessage())
     }
   }
 
@@ -109,12 +110,26 @@ trait Spider extends Actor {
     Thread.sleep(sleepTime)
   }
 
+  def check(data: Any) = {
+    data match {
+      case msg: String if msg.contains(domainName) => true
+      case _ => false
+    }
+  }
+
+  override def start = {
+    val actorId = super.start
+    Registery.register(actorId, check _)
+    actorId
+  }
+  
   def act() {
     loop {
       react {
-        case url: String =>
-          visitPage(url)
+        case (caller: Actor, url: String) => {
+	  visitPage(caller, url)
           sleepForAWhile()
+	}
         case _ =>
           require(false)
       }
