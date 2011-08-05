@@ -24,8 +24,10 @@ class A extends Actor {
   def act() {
     loop {
       react {
-	case v: Int =>
-	  println("[A] incoming int " + v)
+	case (caller: Actor, v: Int) => {
+	  println("[A] incoming int " + v + ", sending back in list")
+	  caller ! (v :: Nil)
+	}
       }
     }
   }
@@ -48,10 +50,14 @@ class B extends Actor {
   def act() {
     loop {
       react {
-	case msg: String =>
-	  println("[B] incoming str " + msg)
-	case vl: Int =>
-	  println("[B] incoming int " + vl)
+	case (caller: Actor, msg: String) => {
+	  println("[B] incoming str " + msg + ", sending back its length")
+	  caller ! msg.length
+	}
+	case (caller: Actor, vl: Int) => {
+	  println("[B] incoming int " + vl + ", sending back as List")
+	  caller ! (vl :: Nil)
+	}
       }
     }
   }
@@ -65,7 +71,7 @@ class B extends Actor {
   }
 }
 
-object ActorDesignEx extends App {
+object ActorDesignEx extends App with Actor {
   /* 
    * Theory of Operation:
    * Every class register itself when starts to run,
@@ -82,12 +88,26 @@ object ActorDesignEx extends App {
 
   val a = new A
   val b = new B
+  val actorId = this.start
   a.start
   b.start
-
-  val data_list = List(10, "olur mu ya", List(1, 2, 3, 4), 6, 10)
+  
+  val data_list = List(10, "olur mu ya!@!@!", List(1, 2, 3, 4), 6, 10)
+  println("sending initial data " + data_list)
   data_list.foreach { data => 
     val workers = ActorRegistry.filter(data)
-    workers.foreach( _ ! data)
+    workers.foreach( _ ! (actorId, data))
+  }
+
+  def act() {
+    loop {
+      react {
+	case  vl: Any => {
+      	  val workers = ActorRegistry.filter(vl)
+	  println("worker list :'" + workers + "', relevant data : " + vl)
+      	  workers.foreach( _ ! (actorId, vl))
+	}
+      }
+    }
   }
 }
