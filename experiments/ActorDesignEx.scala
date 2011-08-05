@@ -25,7 +25,7 @@ class A extends Actor {
     loop {
       react {
 	case v: Int =>
-	  println("incoming " + v)
+	  println("[A] incoming int " + v)
       }
     }
   }
@@ -49,9 +49,9 @@ class B extends Actor {
     loop {
       react {
 	case msg: String =>
-	  println("incoming str " + msg)
+	  println("[B] incoming str " + msg)
 	case vl: Int =>
-	  println("incoming list " + vl)
+	  println("[B] incoming int " + vl)
       }
     }
   }
@@ -86,5 +86,8 @@ object ActorDesignEx extends App {
   b.start
 
   val data_list = List(10, "olur mu ya", List(1, 2, 3, 4), 6, 10)
-  data_list.foreach( data => println("filtered actors " + ActorRegistry.filter(data)))
+  data_list.foreach { data => 
+    val workers = ActorRegistry.filter(data)
+    workers.foreach( _ ! data)
+  }
 }
