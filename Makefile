@@ -11,10 +11,11 @@ SOURCES= \
 	yakala/spiders/PandoraSpider.scala \
 	yakala/spiders/ImgeSpider.scala \
 	yakala/registery/Registery.scala \
+	yakala/tools/Matcher.scala \
 	yakala/Settings.scala
 
 CP=-cp jsoup-1.6.1.jar:.
-FLAGS=-deprecation
+FLAGS=-deprecation -unchecked
 
 yakala: clean build run
 
