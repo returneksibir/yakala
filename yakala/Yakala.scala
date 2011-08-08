@@ -17,6 +17,9 @@ object Yakala {
     val pipeline: ItemPipeline = new GoogleAppEngineBookDB(logger)
     val crawler = new Crawler(logger)
 
-    args.foreach(crawler ! _)
+    val spiderMap = spiders.map(spider => (spider.domainName, spider.startURL)).toMap
+    val argList = args.toList
+    val runList = argList.intersect(spiderMap.keys.toList)
+    runList.foreach(crawler ! spiderMap(_))
   }
 }
