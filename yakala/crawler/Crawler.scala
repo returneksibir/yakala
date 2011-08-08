@@ -12,7 +12,7 @@ import scala.actors.Actor._
 
 class Crawler(logger : Logger) extends Actor {
   private var setOfLinksAlreadyVisited : Set[String] = Set()
-  private val actorId = this.start
+  private val actorSelf = this.start
 
   def act() {
     loop {
@@ -22,14 +22,14 @@ class Crawler(logger : Logger) extends Actor {
 	    setOfLinksAlreadyVisited  += url
 	    val consumers = Registery.filter(url)
 	    logger.debug("[Crawler] Pushing url : " + url + " (pushed url count : " + setOfLinksAlreadyVisited.size + ")")
-	    consumers.foreach( _ ! (actorId, url) )
+	    consumers.foreach( _ ! (actorSelf, url) )
 	  }
 	}
 
 	case vl: Any => {
 	  val consumers = Registery.filter(vl)
 	  logger.debug("[Crawler] Consumer list: '" + consumers + "', relevant data : " + vl)
-	  consumers.foreach( _ ! (actorId, vl) )
+	  consumers.foreach( _ ! (actorSelf, vl) )
 	}
       }
     }
