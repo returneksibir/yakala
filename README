@@ -1,13 +1,12 @@
-A humble web crawler.
+A humble web crawler framework.
 
-In order to build the application you need to run the following command on the root folder of the project:
+In order to build the framework one needs to run the following command on the root folder of the project:
 
 make build
 
-There are are 4 explicit make targets:
+There are are 3 explicit make targets:
 
 clean: Removes *.class files and thus cleans the project
-build: Builds the project
-run  : Runs the project
+build: Builds the framework and produces a jar file
 
-all  : The default target. Runs all 3 targets above.
+all  : The default target. Runs first clean and then build targets above.
