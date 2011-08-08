@@ -2,6 +2,11 @@ package yakala.registery
 
 import scala.actors.Actor
 
+/*
+ * Design of Registery object should be reconsidered.
+ * Abstract type is essential for these check functions
+ * and db.
+ */
 object Registery {
   private var db: Map[Actor, (Any => Boolean)] = Map()
 

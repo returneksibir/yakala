@@ -11,10 +11,19 @@ trait ItemPipeline extends Actor {
   def processItem(item : Map[String, String])
 
   def check(data: Any) = {
-    val MapStringString = new Matcher[Map[String, String]]
-    data match {
-      case MapStringString(vl) => true
-      case _ => false
+    /*
+     * Using asInstanceOf is very very ugly.
+     * It is because of Any type of parameter.
+     * See comment on registery object.
+     */
+    try {
+      val MapStringString = new Matcher[Map[String, String]]
+      data.asInstanceOf[Map[String, String]] match {
+	case MapStringString(vl) => true
+	case _ => false
+      }
+    } catch {
+      case e: ClassCastException => false
     }
   }
 
@@ -29,7 +38,7 @@ trait ItemPipeline extends Actor {
     loop {
       react {
 	case (caller: Actor, item: Any) => {
-	  item match {
+	  item.asInstanceOf[Map[String, String]] match {
 	    case MapStringString(vl) => 
 	      processItem(vl)
 	    case _ => require(false)
