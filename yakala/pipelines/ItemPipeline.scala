@@ -28,9 +28,9 @@ trait ItemPipeline extends Actor {
   }
 
   override def start = {
-    val actorSelf = super.start
-    Registery.register(actorSelf, check _)
-    actorSelf
+    val thisActor = super.start
+    Registery.register(thisActor, check _)
+    thisActor
   }
 
   def act() {
