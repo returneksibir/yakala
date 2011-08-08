@@ -72,8 +72,11 @@ trait Spider extends Actor {
 
   def visitPage(caller: Actor, url : String) {
     try {
+
       logger.info("Sayfa :" + url)
+  
       val doc = Jsoup.connect(url).get()
+
       if (isProductPage(url)) {
         try {
           val bookMap  = processItem(doc) + ("url" -> url)
@@ -83,19 +86,16 @@ trait Spider extends Actor {
         }
       }
 
-    actor {
-      sleepForAWhile()
-      val linksOnPage = getLinks(doc).filter{ link => 
+      var linksOnPage = getLinks(doc)
+      linksOnPage = linksOnPage.filter{ link => 
         link.startsWith("http://" + domainName) ||
-	link.startsWith("http://www." + domainName) ||
-	(!link.startsWith("http://") && !link.startsWith("javascript:") && !link.startsWith("mailto:"))
+        link.startsWith("http://www." + domainName) ||
+        (!link.startsWith("http://") && !link.startsWith("javascript:") && !link.startsWith("mailto:"))
       }
-
       linksOnPage.foreach{ href => 
         val link = MakeUrl(url, href) 
         caller ! link
       }
-    }
 
     } catch {
       case e  => logger.warning("Exception :" + e.getMessage())
@@ -128,6 +128,7 @@ trait Spider extends Actor {
       react {
         case (caller: Actor, url: String) => {
 	  visitPage(caller, url)
+          sleepForAWhile()
 	}
         case _ =>
           require(false)
