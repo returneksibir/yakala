@@ -26,4 +26,4 @@ build:
 	fsc $(FLAGS) $(CP) $(SOURCES)
 
 run:
-	time scala -cp ./jsoup-1.6.1.jar:. yakala.Yakala http://www.imge.com.tr http://www.pandora.com.tr
+	time scala -cp ./jsoup-1.6.1.jar:. yakala.Yakala imge.com.tr pandora.com.tr
