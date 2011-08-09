@@ -10,7 +10,7 @@ SOURCES= \
 	yakala/Settings.scala
 
 CP=-cp jsoup-1.6.1.jar:.
-FLAGS=-deprecation
+FLAGS=-deprecation -unchecked
 
 yakala: clean build
 
