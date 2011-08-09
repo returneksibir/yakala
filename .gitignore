@@ -3,3 +3,6 @@
 *.orig
 *~
 \#*#
+\.#*
+yakala.jar
+
