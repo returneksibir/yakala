@@ -12,11 +12,21 @@ trait Spider extends Actor {
   def domainName()  : String
   def startURL()    : String
   def processItem(doc : Document) : Map[String, String]
-  def isProductPage(pageUrl : String) : Boolean
-
+  def productPagePattern()  : util.matching.Regex
+  
   private val random = new Random()
   private val logger : Logger = new ConsoleLogger()
   logger.setLogLevel(Logger.LOG_INFO)
+
+  def isProductPage(pageUrl : String) : Boolean = {
+    try {
+      val PatternMatcher = productPagePattern;
+      val PatternMatcher(matchStr) = pageUrl
+      return true
+    } catch {
+      case e : MatchError => return false
+    }
+  }
 
   def getLinks(doc : Document) : collection.immutable.Set[String] = {
     var linksSet : collection.immutable.Set[String] = collection.immutable.Set()
