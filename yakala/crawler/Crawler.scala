@@ -11,7 +11,7 @@ import scala.actors.Actor._
 
 
 class Crawler(logger : Logger) extends Actor {
-  private val linkDb = new refDbH2("CrawledLinks")
+  private val linkDb = new refDbPostgreSql("CrawledLinks", "postgres", "postgres")
   private val thisActor = this.start
   private var counter = 0
 

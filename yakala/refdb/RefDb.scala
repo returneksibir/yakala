@@ -6,19 +6,12 @@ import org.squeryl.KeyedEntity
 import org.squeryl.Session
 import org.squeryl.SessionFactory
 import org.squeryl.adapters.H2Adapter
+import org.squeryl.adapters.PostgreSqlAdapter
 
 class Ref(var id: Long, var ref: String) extends KeyedEntity[Long] {
 }
 
-abstract class refDb {
-  def openSession()
-  def closeSession()
-  def hasRef(id: Long): Boolean
-  def addRef(entry: Ref): Boolean
-  def delRef(id: Long): Boolean
-}
-
-sealed class refH2Schema extends Schema {
+sealed class refSchema extends Schema {
   val refs = table[Ref]
   
   on(refs)(ref => declare (
@@ -31,31 +24,33 @@ sealed class refH2Schema extends Schema {
   }
 }
 
-class refDbH2(val dbName: String) extends refDb {
-  def this() = this("Yakala.refs")
-  private val refSchema = new refH2Schema
+sealed class refDbPolymorphic(val dbName: String, val username: String, val password: String) {
+  def this() = this("Yakala.refs", "", "")
+  def this(dbName: String) = this(dbName, "", "")
+  def this(dbName: String, username: String) = this(dbName, username, "")
+}
+
+trait refDb {
+  private val _refSchema = new refSchema
   openSession()
   transaction {
-    refSchema create
+    _refSchema create
   }
 
   def openSession() {
-    Class.forName("org.h2.Driver")
-    SessionFactory.concreteFactory = Some( () =>
-      Session.create(DriverManager.getConnection("jdbc:h2:" + dbName, dbName, ""), new H2Adapter))
-      // Session.create(DriverManager.getConnection("jdbc:h2:mem", dbName, ""), new H2Adapter))
+    throw new Exception("A valid session must be implemented!")
   }
 
-  def closeSession() {
+  def closeSession() = {
     /* Don't know what to do here ! */
     transaction {
-      refSchema.drop
+      _refSchema.drop
     }
   }
 
   def hasRef(id: Long) = {
     transaction {
-      val entry = refSchema.refs.where(ref => ref.id === id).toList
+      val entry = _refSchema.refs.where(ref => ref.id === id).toList
       if (entry.size > 0) {
 	true
       } else {
@@ -67,7 +62,7 @@ class refDbH2(val dbName: String) extends refDb {
   def addRef(entry: Ref) = {
     try {
       transaction {
-	refSchema.refs.insert(entry)
+	_refSchema.refs.insert(entry)
       }
       true
     } catch {
@@ -80,9 +75,28 @@ class refDbH2(val dbName: String) extends refDb {
       false
     }
     transaction {
-      refSchema.refs.deleteWhere(ref => ref.id === id)
+      _refSchema.refs.deleteWhere(ref => ref.id === id)
     }
     true
   }
 }
-  
+
+/*
+ * Follow the link below in order to have basic working postgresql;
+ * https://help.ubuntu.com/community/PostgreSQL
+ */
+class refDbPostgreSql(dbName: String, username: String, password: String) extends refDbPolymorphic(dbName, username, password) with refDb {
+  override def openSession {
+    Class.forName("org.postgresql.Driver")
+    SessionFactory.concreteFactory = Some(() =>
+      Session.create(DriverManager.getConnection("jdbc:postgresql://localhost/" + dbName, username, password), new PostgreSqlAdapter))
+  }
+}
+
+class refDbH2(dbName: String, username: String, password: String)  extends refDbPolymorphic(dbName, username, password) with refDb {
+  override def openSession {
+    Class.forName("org.h2.Driver")
+    SessionFactory.concreteFactory = Some(() =>
+      Session.create(DriverManager.getConnection("jdbc:h2:~/" + dbName, username, password), new H2Adapter))
+  }
+}
