@@ -13,6 +13,7 @@ trait Spider extends Actor {
   def startURL()    : String
   def processItem(doc : Document) : Map[String, String]
   def productPagePattern()  : util.matching.Regex
+  def followRulePattern()   : util.matching.Regex
   
   private val random = new Random()
   private val logger : Logger = new ConsoleLogger()
@@ -102,10 +103,14 @@ trait Spider extends Actor {
         (!link.startsWith("http://") && !link.startsWith("javascript:") && !link.startsWith("mailto:"))
       }
       linksOnPage.foreach{ href => 
-        val link = MakeUrl(url, href) 
-        sender ! (this, link)
+        val link = MakeUrl(url, href)
+        val FOLLOW_RULE_PATTERN = followRulePattern
+        link match {
+          case FOLLOW_RULE_PATTERN(_) => sender ! (this, link)
+          case _ => logger.debug("The link does not match the follow rule, ignoring it")
+        }
       }
-  
+      
     } catch {
       case e  => logger.debug("Exception :" + e.getMessage())
     }
