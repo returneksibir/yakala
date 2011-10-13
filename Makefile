@@ -15,7 +15,7 @@ FLAGS=-deprecation -unchecked
 yakala: clean build
 
 clean:
-	-find yakala/ -name "*.class" | xargs rm
+	-find yakala/ -name "*.class" -exec rm {} \;
 
 build:
 	fsc $(FLAGS) $(CP) $(SOURCES)
