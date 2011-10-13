@@ -35,7 +35,7 @@ trait Spider extends Actor {
     val iter = links.iterator()
     while(iter.hasNext()) {
       val link = iter.next()
-      val href = link.attr("href").toLowerCase()
+      val href = link.attr("href")
       linksSet += href
     }
 
@@ -98,10 +98,13 @@ trait Spider extends Actor {
 
       var linksOnPage = getLinks(doc)
       linksOnPage = linksOnPage.filter{ link => 
-        link.startsWith("http://" + domainName) ||
-        link.startsWith("http://www." + domainName) ||
-        (!link.startsWith("http://") && !link.startsWith("javascript:") && !link.startsWith("mailto:"))
+        val link_       = link.toLowerCase()
+        val domainName_ = domainName.toLowerCase()
+        link_.startsWith("http://" + domainName_) ||
+        link_.startsWith("http://www." + domainName_) ||
+        (!link_.startsWith("http://") && !link_.startsWith("javascript:") && !link_.startsWith("mailto:"))
       }
+
       linksOnPage.foreach{ href => 
         val link = MakeUrl(url, href)
         val FOLLOW_RULE_PATTERN = followRulePattern

@@ -14,9 +14,10 @@ class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
   private var setOfLinksAlreadyVisited : Set[String] = Set()
 
   def crawlPage(spider : Spider, url : String)  {
-    if (!setOfLinksAlreadyVisited.contains(url)) {
+    val url_ = url.toLowerCase()
+    if (!setOfLinksAlreadyVisited.contains(url_)) {
       spider ! url
-      setOfLinksAlreadyVisited  += url
+      setOfLinksAlreadyVisited  += url_
       logger.debug("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
     }
   }
