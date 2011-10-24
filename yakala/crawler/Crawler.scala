@@ -25,7 +25,7 @@ class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
   def act() {
     loop {
       react {
-        case item : Map[String, String]       => pipeline.processItem(item)
+        case item : Map[String, String]       => pipeline ! item
         case (spider : Spider, url : String)  => crawlPage(spider, url)
         case _                                => require(false)
       }
