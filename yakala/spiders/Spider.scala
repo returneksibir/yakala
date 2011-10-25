@@ -15,6 +15,7 @@ trait Spider extends Actor {
   def productPagePattern()  : util.matching.Regex
   def followRulePattern()   : util.matching.Regex
   
+  private var numberOfExtractedLinks = 0
   private val random = new Random()
   private val logger : Logger = new ConsoleLogger()
   logger.setLogLevel(Logger.LOG_INFO)
@@ -109,7 +110,9 @@ trait Spider extends Actor {
         val link = MakeUrl(url, href)
         val FOLLOW_RULE_PATTERN = followRulePattern
         link match {
-          case FOLLOW_RULE_PATTERN(_) => sender ! (this, link)
+          case FOLLOW_RULE_PATTERN(_) => 
+            numberOfExtractedLinks += 1
+            sender ! (this, link)
           case _ => logger.debug("The link does not match the follow rule, ignoring it")
         }
       }
@@ -137,6 +140,10 @@ trait Spider extends Actor {
           require(false)
       }
     }
+  }
+
+  def printStats(print : String => Unit) {
+    print("\n" + domainName + "(" + numberOfExtractedLinks + ", " + mailboxSize + ")")
   }
 }
 

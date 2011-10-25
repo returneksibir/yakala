@@ -12,13 +12,16 @@ import scala.actors.Actor._
 class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
   
   private var setOfLinksAlreadyVisited : Set[String] = Set()
+  private var numberOfDuplicateLinks = 0
 
   def crawlPage(spider : Spider, url : String)  {
     val url_ = url.toLowerCase()
     if (!setOfLinksAlreadyVisited.contains(url_)) {
       spider ! url
       setOfLinksAlreadyVisited  += url_
-      logger.debug("Gezilen   sayfa sayısı : " + setOfLinksAlreadyVisited.size)
+    }
+    else {
+      numberOfDuplicateLinks += 1
     }
   }
 
@@ -30,6 +33,12 @@ class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
         case _                                => require(false)
       }
     }
+  }
+  
+  def printStats(print : String => Unit) {
+    print("\nSet size               	= " + setOfLinksAlreadyVisited.size)
+    print("\n# messages in mailbox 	= " + this.mailboxSize)
+    print("\n# duplicate links ignored = " + numberOfDuplicateLinks)
   }
 }
 
