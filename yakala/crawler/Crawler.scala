@@ -3,7 +3,7 @@ package yakala.crawler
 import yakala.logging.Logger
 import yakala.pipelines.ItemPipeline
 import yakala.spiders.Spider
-import collection.mutable.Set
+import collection.mutable.HashSet
 import collection.immutable.Map
 import scala.actors.Actor
 import scala.actors.Actor._
@@ -11,7 +11,7 @@ import scala.actors.Actor._
 
 class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
   
-  private var setOfLinksAlreadyVisited : Set[String] = Set()
+  private var setOfLinksAlreadyVisited : HashSet[String] = HashSet()
   private var numberOfDuplicateLinks = 0
 
   def crawlPage(spider : Spider, url : String)  {
