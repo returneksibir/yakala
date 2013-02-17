@@ -9,7 +9,7 @@ SOURCES= \
 	yakala/spiders/Spider.scala \
 	yakala/Settings.scala
 
-CP=-cp jsoup-1.6.1.jar:.
+CP=-cp lib/jsoup-1.6.1.jar:.
 FLAGS=-deprecation -unchecked
 
 yakala: clean build
