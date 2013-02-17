@@ -8,7 +8,7 @@ class BloomFilterLinkSet(falsePositiveProbability : Double, expectedSize : Int) 
 
   def add(value : String) : Unit = set.add(value)
   def contains(value : String) : Boolean = set.contains(value)
-  def size() : Int = set.size
+  def size() : Int = set.count
 
 }
 
