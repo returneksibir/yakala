@@ -7,9 +7,12 @@ SOURCES= \
 	yakala/logging/ConsoleLogger.scala \
 	yakala/pipelines/ItemPipeline.scala \
 	yakala/spiders/Spider.scala \
+	yakala/utils/SetTrait.scala \
+	yakala/utils/DefaultLinkSet.scala \
+	yakala/utils/BloomFilterLinkSet.scala \
 	yakala/Settings.scala
 
-CP=-cp lib/jsoup-1.6.1.jar:.
+CP=-cp lib/*:.
 FLAGS=-deprecation -unchecked
 
 yakala: clean build

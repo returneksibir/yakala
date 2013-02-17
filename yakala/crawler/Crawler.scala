@@ -3,22 +3,24 @@ package yakala.crawler
 import yakala.logging.Logger
 import yakala.pipelines.ItemPipeline
 import yakala.spiders.Spider
-import collection.mutable.HashSet
+import yakala.utils.SetTrait
 import collection.immutable.Map
 import scala.actors.Actor
 import scala.actors.Actor._
 
 
-class Crawler(logger : Logger, pipeline : ItemPipeline) extends Actor {
+class Crawler(logger : Logger,
+		pipeline : ItemPipeline,
+		setOfLinksAlreadyVisited : SetTrait
+		) extends Actor {
   
-  private var setOfLinksAlreadyVisited : HashSet[String] = HashSet()
   private var numberOfDuplicateLinks = 0
 
   def crawlPage(spider : Spider, url : String)  {
     val url_ = url.toLowerCase()
     if (!setOfLinksAlreadyVisited.contains(url_)) {
       spider ! url
-      setOfLinksAlreadyVisited  += url_
+      setOfLinksAlreadyVisited.add(url_)
     }
     else {
       numberOfDuplicateLinks += 1
