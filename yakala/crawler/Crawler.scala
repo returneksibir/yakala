@@ -10,7 +10,7 @@ import scala.actors.Actor._
 
 
 class Crawler(logger : Logger,
-		pipeline : ItemPipeline,
+		pipelines : List[ItemPipeline],
 		setOfLinksAlreadyVisited : SetTrait
 		) extends Actor {
   
@@ -30,7 +30,10 @@ class Crawler(logger : Logger,
   def act() {
     loop {
       react {
-        case item : Map[String, String]       => pipeline ! item
+        case item : Map[String, String]       =>
+          pipelines.foreach {
+            pipeline => pipeline ! item
+          }
         case (spider : Spider, url : String)  => crawlPage(spider, url)
         case _                                => require(false)
       }
