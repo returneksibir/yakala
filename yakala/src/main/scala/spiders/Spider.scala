@@ -1,11 +1,15 @@
 package yakala.spiders
 
+import scala.actors.Actor
+import scala.actors.Actor._
+import scala.concurrent.future
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Success, Failure}
 import yakala.Settings
 import yakala.logging._
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import scala.actors.Actor
-import scala.actors.Actor._
 import util.Random
 
 trait Spider extends Actor {
@@ -81,44 +85,45 @@ trait Spider extends Actor {
   }
 
   def visitPage(url : String) {    
-    try {
-
-      logger.info("Sayfa :" + url)
-  
-      val doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").get()
-  
-      if (isProductPage(url)) {
-        try {
-          var bookMap  = processItem(doc)
-          bookMap += "url" -> url
-          sender ! bookMap
-        } catch {
-          case e => logger.info(e.getMessage())
+    logger.info("Sayfa :" + url)
+    
+    def getURL(url: String) = future {
+      Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").get()
+    }
+    val doc = getURL(url)
+    doc.onComplete {
+      case Success(doc) =>
+        logger.info(s"Document succeeded: $url")
+        if (isProductPage(url)) {
+          try {
+            var bookMap  = processItem(doc)
+            bookMap += "url" -> url
+            sender ! bookMap
+          } catch {
+            case e => logger.info(e.getMessage())
+          }
         }
-      }
-
-      var linksOnPage = getLinks(doc)
-      linksOnPage = linksOnPage.filter{ link => 
-        val link_       = link.toLowerCase()
-        val domainName_ = domainName.toLowerCase()
-        link_.startsWith("http://" + domainName_) ||
-        link_.startsWith("http://www." + domainName_) ||
-        (!link_.startsWith("http://") && !link_.startsWith("javascript:") && !link_.startsWith("mailto:"))
-      }
-
-      linksOnPage.foreach{ href => 
-        val link = MakeUrl(url, href)
-        val FOLLOW_RULE_PATTERN = followRulePattern
-        link match {
-          case FOLLOW_RULE_PATTERN(_) => 
-            numberOfExtractedLinks += 1
-            sender ! (this, link)
-          case _ => logger.debug("The link does not match the follow rule, ignoring it")
+        var linksOnPage = getLinks(doc)
+        linksOnPage = linksOnPage.filter{ link =>
+          val link_       = link.toLowerCase()
+          val domainName_ = domainName.toLowerCase()
+          link_.startsWith("http://" + domainName_) ||
+          link_.startsWith("http://www." + domainName_) ||
+          (!link_.startsWith("http://") && !link_.startsWith("javascript:") && !link_.startsWith("mailto:"))
         }
-      }
-      
-    } catch {
-      case e  => logger.debug("Exception :" + e.getMessage())
+
+        linksOnPage.foreach{ href =>
+          val link = MakeUrl(url, href)
+          val FOLLOW_RULE_PATTERN = followRulePattern
+          link match {
+            case FOLLOW_RULE_PATTERN(_) =>
+              numberOfExtractedLinks += 1
+              sender ! (this, link)
+            case _ => logger.debug("The link does not match the follow rule, ignoring it")
+          }
+        }
+      case Failure(ex) =>
+        println("Failed to get URL: " + ex.getMessage())
     }
   }
 
@@ -134,8 +139,9 @@ trait Spider extends Actor {
     loop {
       react {
         case url: String =>
+          println(s"Incoming url ${url}")
           visitPage(url)
-          sleepForAWhile()
+          // sleepForAWhile()
         case _ =>
           require(false)
       }
