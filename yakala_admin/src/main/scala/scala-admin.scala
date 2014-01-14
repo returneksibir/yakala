@@ -1,5 +1,6 @@
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.ILoop
+
+import yakala_admin.console.YakalaConsole
 
 object Main extends App {
   type ArgumentMap = Map[Symbol, Any]
@@ -11,8 +12,18 @@ object Main extends App {
         val settings = new Settings
         settings.usejavacp.value = true
         settings.deprecation.value = true
-        new YakalaLoop().process(settings)
+        new YakalaConsole().process(settings)
         parseArgs(map ++ Map('shell -> true), tail)
+      case "help" :: tail =>
+        val msg = s"""
+yakala-admin supported commands:
+
+        console         : drops you into console.
+        help            : this message.
+
+"""
+        print(msg)
+        map
       case arg :: tail =>
         println("Invalid argument: " + arg)
         map
@@ -20,16 +31,4 @@ object Main extends App {
   }
 
   val argm = parseArgs(Map(), args.toList)
-}
-
-class YakalaLoop extends ILoop {
-  override def prompt = "yakala-admin> "
-  override def createInterpreter() {
-    intp = new YakalaInterpreter
-  }
-
-  class YakalaInterpreter extends ILoopInterpreter {
-    def prevRequest: Option[Request] = Option(lastRequest)
-    def lastValue: Option[AnyRef] = prevRequest flatMap (_.lineRep.callOpt("$result"))
-  }
 }

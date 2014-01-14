@@ -1,3 +1,11 @@
 A humble web crawler framework.
 
 See sbt build options.
+
+Yakala project includes yakala framework which is an actual web crawler and yakala_admin provides commands to use yakala framework.
+
+In order to get started compile helper binaries;
+$ sbt start-script
+
+This command will result with a script located under 'yakala_admin/target/yakala-admin'.
+
